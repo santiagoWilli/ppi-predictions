@@ -1,0 +1,4 @@
+tfm_env/
+datasets/*
+!datasets/.gitkeep
+*__pycache__*
