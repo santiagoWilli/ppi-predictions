@@ -1,28 +1,50 @@
-from pandas import DataFrame
-from src.encoders.sequence_encoder import SequenceEncoder
+import gc
+from typing import Optional
+from pandas import DataFrame, concat
+from encoders.sequence_encoder import SequenceEncoder
 
 class SequencePreprocessor:
     """
     Preprocessor of sequences that applies encoding + padding
     """
 
-    def __init__(self, encoder: SequenceEncoder, max_length: int, padding_value: int = 0):
-        self.encoder = encoder
-        self.max_length = max_length
+    _OUTPUT_DIR = "tmp_chunks"
+
+    def __init__(self, encoder: SequenceEncoder, max_length: int, padding_value: int = 0, chunk_size: Optional[int] = None):
+        self.encoder       = encoder
+        self.max_length    = max_length
         self.padding_value = padding_value
+        self.chunk_size    = chunk_size
 
     def process_dataframe(self, df: DataFrame, col_seq1: str = "sequence1", col_seq2: str = "sequence2") -> DataFrame:
         """
-        Processes a DataFrame with two columns of sequences and applies encoding + padding.
+        Process a DataFrame with two columns of sequences and apply encoding + padding.
         """
-        df = df.copy()
-        df["input1"] = df[col_seq1].apply(self._encode_and_pad)
-        df["input2"] = df[col_seq2].apply(self._encode_and_pad)
-        return df
+        if self.chunk_size and len(df) > self.chunk_size:
+            print(f"Huge DataFrame: processing by chunks of {self.chunk_size} rows")
+            chunks = []
+            for i in range(0, len(df), self.chunk_size):
+                df_chunk = df.iloc[i : i + self.chunk_size]
+                processed = self._process_chunk(df_chunk, col_seq1, col_seq2)
+                chunks.append(processed)
+                print(f" - Processed chunk {i // self.chunk_size + 1}")
+                del df_chunk
+                del processed
+                gc.collect()
+            return concat(chunks, ignore_index=True)
+        else:
+            return self._process_chunk(df, col_seq1, col_seq2)
+    
+    def _process_chunk(self, df: DataFrame, col_seq1: str, col_seq2: str) -> DataFrame:
+        df_meta = df.copy()
+        df_meta[col_seq1] = df_meta[col_seq1].apply(self._encode_and_pad)
+        df_meta[col_seq2] = df_meta[col_seq2].apply(self._encode_and_pad)
+        df_meta.rename(columns={col_seq1: "input1", col_seq2: "input2"}, inplace=True)
+        return df_meta
 
     def _encode_and_pad(self, sequence: str) -> list:
         """
-        Encodes a sequence of aminoacids and pads it.
+        Encode a sequence of aminoacids and pad it.
         """
         encoded = self.encoder.encode(sequence)
         if len(encoded) > self.max_length:

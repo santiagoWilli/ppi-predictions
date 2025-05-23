@@ -1,4 +1,4 @@
-from src.fasta_parser import FastaParser
+from fasta_parser import FastaParser
 
 def analyze_missing_proteins(df, protein_seqs: dict) -> None:
     """

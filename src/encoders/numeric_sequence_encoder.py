@@ -1,4 +1,4 @@
-from src.encoders.sequence_encoder import SequenceEncoder
+from encoders.sequence_encoder import SequenceEncoder
 
 class NumericSequenceEncoder(SequenceEncoder):
     """
