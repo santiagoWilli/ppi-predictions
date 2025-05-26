@@ -8,8 +8,6 @@ class SequencePreprocessor:
     Preprocessor of sequences that applies encoding + padding
     """
 
-    _OUTPUT_DIR = "tmp_chunks"
-
     def __init__(self, encoder: SequenceEncoder, max_length: int, padding_value: int = 0, chunk_size: Optional[int] = None):
         self.encoder       = encoder
         self.max_length    = max_length
@@ -37,9 +35,8 @@ class SequencePreprocessor:
     
     def _process_chunk(self, df: DataFrame, col_seq1: str, col_seq2: str) -> DataFrame:
         df_meta = df.copy()
-        df_meta[col_seq1] = df_meta[col_seq1].apply(self._encode_and_pad)
-        df_meta[col_seq2] = df_meta[col_seq2].apply(self._encode_and_pad)
-        df_meta.rename(columns={col_seq1: "input1", col_seq2: "input2"}, inplace=True)
+        df_meta["input1"] = df_meta[col_seq1].apply(self._encode_and_pad)
+        df_meta["input2"] = df_meta[col_seq2].apply(self._encode_and_pad)
         return df_meta
 
     def _encode_and_pad(self, sequence: str) -> list:
