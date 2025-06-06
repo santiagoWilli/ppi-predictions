@@ -1,7 +1,7 @@
+from pathlib import Path
 from typing import Any
 from azure.ai.ml import MLClient, command
 from azure.identity import DefaultAzureCredential
-
 from .job_type import JobType
 from .job_id import JobID
 from .compute_platform import ComputePlatform
@@ -24,16 +24,18 @@ class AzureComputePlatform(ComputePlatform):
     def queue_job(
         self, job_type: JobType, input_name: str, input_version: str, output_name: str
     ) -> JobID:
+        src_path = str(Path(__file__).resolve().parents[1])
+
         job = command(
-            code="src/",
+            code=src_path,
             command=(
-                "python src/preprocess/preprocessing_job.py "
+                "python src/computation/jobs/preprocessing_job.py "
                 f"--input-name {input_name} --input-version {input_version} "
                 f"--output-name {output_name}"
             ),
-            environment=self._environment_name + "@latest",
+            environment=self._environment_name,
             compute=self._compute_name,
-            experiment_name="pp_experiment",
+            experiment_name="ppi_experiment",
         )
         returned = self._ml_client.jobs.create_or_update(job)
         return JobID(returned.name)
@@ -42,6 +44,5 @@ class AzureComputePlatform(ComputePlatform):
         job = self._ml_client.jobs.get(str(job_id))
         return job.status
 
-    def get_resource(self, output_name: str, version: str) -> Any:
-        ds = self._ml_client.datasets.get(name=output_name, version=version)
-        return ds
+    def get_resource(self, name: str, version: str) -> Any:
+        return self._ml_client.data.get(name=name, version=version)
