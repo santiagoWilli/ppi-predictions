@@ -1,6 +1,22 @@
+# Core
 pandas==2.2.3
 numpy==2.2.5
+pyarrow==20.0.0
 matplotlib==3.10.3
+scikit-learn==1.5.0
+
+# Azure
+azure-ai-ml==1.27.1
+azure-identity==1.23.0
+msrest==0.7.1
+
+# Pytorch
 torch==2.7.0+cu128
 torchvision==0.22.0+cu128
 torchaudio==2.7.0+cu128
+triton==3.3.0
+
+# Jupyter
+jupyterlab==4.4.2
+ipykernel==6.29.5
+ipywidgets==8.1.7

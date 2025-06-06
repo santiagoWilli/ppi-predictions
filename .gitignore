@@ -3,3 +3,4 @@ datasets/*
 !datasets/.gitkeep
 *__pycache__*
 processed_data/
+.env
