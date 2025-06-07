@@ -11,12 +11,6 @@ azure-identity==1.23.0
 msrest==0.7.1
 mltable==1.6.1
 
-# Pytorch
-torch==2.7.0+cu128
-torchvision==0.22.0+cu128
-torchaudio==2.7.0+cu128
-triton==3.3.0
-
 # Jupyter
 jupyterlab==4.4.2
 ipykernel==6.29.5

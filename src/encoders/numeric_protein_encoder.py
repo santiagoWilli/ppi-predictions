@@ -1,6 +1,6 @@
-from encoders.sequence_encoder import SequenceEncoder
+from encoders.protein_encoder import ProteinEncoder
 
-class NumericSequenceEncoder(SequenceEncoder):
+class NumericProteinEncoder(ProteinEncoder):
     """
     Encoder for protein sequences using numeric representation.
     """
@@ -12,10 +12,3 @@ class NumericSequenceEncoder(SequenceEncoder):
 
     def encode(self, sequence: str) -> list:
         return [self.aa_to_index.get(aa, self.unknown_index) for aa in sequence]
-
-    def decode(self, indices: list) -> str:
-        index_to_aa = {v: k for k, v in self.aa_to_index.items()}
-        return "".join(index_to_aa.get(i, "X") for i in indices)
-
-    def vocabulary_size(self) -> int:
-        return len(self.aa_to_index) + 1  # include unknown index

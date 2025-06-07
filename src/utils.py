@@ -1,3 +1,6 @@
+from pathlib import Path
+import numpy as np
+from typing import Tuple
 from fasta_parser import FastaParser
 
 def analyze_missing_proteins(df, protein_seqs: dict) -> None:
@@ -28,3 +31,23 @@ def analyze_missing_proteins(df, protein_seqs: dict) -> None:
 
     print("\n🔍 Ejemplos de IDs no encontrados:")
     print(list(missing_ids)[:10])
+
+def load_numpy_dataset(folder: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Load all input1, input2 and labels .npy chunks from a folder and concatenate them.
+    
+    Returns:
+        X1: np.ndarray of shape (N, max_length)
+        X2: np.ndarray of shape (N, max_length)
+        y:  np.ndarray of shape (N,)
+    """
+    path = Path(folder)
+    input1_files = sorted(path.glob("input1_chunk_*.npy"))
+    input2_files = sorted(path.glob("input2_chunk_*.npy"))
+    label_files  = sorted(path.glob("labels_chunk_*.npy"))
+
+    X1 = np.concatenate([np.load(f) for f in input1_files], axis=0)
+    X2 = np.concatenate([np.load(f) for f in input2_files], axis=0)
+    y  = np.concatenate([np.load(f) for f in label_files],  axis=0)
+
+    return X1, X2, y
