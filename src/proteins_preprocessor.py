@@ -1,5 +1,6 @@
 import gc
 import math
+import json
 from pathlib import Path
 import numpy as np
 from pandas import DataFrame
@@ -52,6 +53,7 @@ class ProteinsPreprocessor:
 
             del df_chunk, input1, input2, labels
             gc.collect()
+        self._save_metadata(len(df))
 
     def _encode_and_pad(self, sequence: str) -> list[int]:
         """
@@ -61,3 +63,14 @@ class ProteinsPreprocessor:
         if len(encoded) > self.max_length:
             encoded = encoded[:self.max_length]
         return encoded + [self.padding_value] * (self.max_length - len(encoded))
+    
+    def _save_metadata(self, total_rows: int) -> None:
+        """
+        Save metadata (e.g., total rows) to a JSON file in the output directory.
+        """
+        metadata = {
+            "total_rows": total_rows
+        }
+        metadata_path = self.output_dir / "metadata.json"
+        with open(metadata_path, "w") as f:
+            json.dump(metadata, f, indent=4)
