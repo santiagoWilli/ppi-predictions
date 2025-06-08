@@ -23,6 +23,13 @@ class ProteinsPreprocessor:
         self.chunk_size    = chunk_size
         self.output_dir    = Path(output_dir)
 
+        if self.output_dir.exists():
+            # Delete the folder if it exists
+            for file in self.output_dir.glob("*"):
+                file.unlink()
+            self.output_dir.rmdir()
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
     def process_dataframe(self, df: DataFrame, col_seq1: str = "sequence1", col_seq2: str = "sequence2", col_label: str = "label") -> None:
         """
         Processes the DataFrame in chunks and saves encoded sequences and labels to .npy files.
@@ -39,9 +46,9 @@ class ProteinsPreprocessor:
             input2 = [self._encode_and_pad(seq) for seq in df_chunk[col_seq2].values]
             labels = df_chunk[col_label].to_numpy(dtype=np.int8)
 
-            np.save(self.output_dir / f"input1_chunk_{i}.npy", np.array(input1, dtype=np.int16))
-            np.save(self.output_dir / f"input2_chunk_{i}.npy", np.array(input2, dtype=np.int16))
-            np.save(self.output_dir / f"labels_chunk_{i}.npy", labels)
+            np.save(self.output_dir / f"chunk_{i}_input1.npy", np.array(input1, dtype=np.int16))
+            np.save(self.output_dir / f"chunk_{i}_input2.npy", np.array(input2, dtype=np.int16))
+            np.save(self.output_dir / f"chunk_{i}_labels.npy", labels)
 
             del df_chunk, input1, input2, labels
             gc.collect()

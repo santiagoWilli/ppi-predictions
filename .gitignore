@@ -3,5 +3,6 @@ env-tfm/
 datasets/*
 !datasets/.gitkeep
 *__pycache__*
-processed_data/
+processed_data/*
+!processed_data/.gitkeep
 .env

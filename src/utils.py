@@ -42,9 +42,9 @@ def load_numpy_dataset(folder: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
         y:  np.ndarray of shape (N,)
     """
     path = Path(folder)
-    input1_files = sorted(path.glob("input1_chunk_*.npy"))
-    input2_files = sorted(path.glob("input2_chunk_*.npy"))
-    label_files  = sorted(path.glob("labels_chunk_*.npy"))
+    input1_files = sorted(path.glob("chunk_*_input1.npy"))
+    input2_files = sorted(path.glob("chunk_*_input2.npy"))
+    label_files  = sorted(path.glob("chunk_*_labels.npy"))
 
     X1 = np.concatenate([np.load(f) for f in input1_files], axis=0)
     X2 = np.concatenate([np.load(f) for f in input2_files], axis=0)
