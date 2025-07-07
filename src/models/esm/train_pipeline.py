@@ -10,7 +10,7 @@ def train_model(
     train_loader: DataLoader,
     val_loader: DataLoader,
     model_save_path: str,
-    input_dim: int = 1280,
+    input_dim: int = 320,
     hidden_dim: int = 512,
     lr: float = 1e-3,
     epochs: int = 10,
@@ -21,7 +21,7 @@ def train_model(
 
     model = SiameseMLP(input_dim=input_dim, hidden_dim=hidden_dim).to(device)
     criterion = nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     scaler = GradScaler()
 
     best_val_loss = float("inf")
