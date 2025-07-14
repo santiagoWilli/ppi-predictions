@@ -15,8 +15,7 @@ class ConvolutiveSiameseModel(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(2 * hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, 1),
-            nn.Sigmoid()
+            nn.Linear(hidden_dim, 1)
         )
 
     def forward_once(self, x: torch.Tensor) -> torch.Tensor:
