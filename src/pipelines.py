@@ -3,35 +3,33 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import os
-
-from models.convolutive_siamese_model import ConvolutiveSiameseModel
+import matplotlib.pyplot as plt
+from sklearn.metrics import (
+    f1_score,
+    roc_auc_score,
+    roc_curve,
+    confusion_matrix,
+    ConfusionMatrixDisplay
+)
 
 def train_model(
+    model: nn.Module,
     train_loader: DataLoader,
     val_loader: DataLoader,
-    vocab_size: int,
     model_save_path: str,
-    embedding_dim: int = 128,
-    hidden_dim: int = 256,
     lr: float = 1e-3,
     epochs: int = 30,
     patience: int = 3,
-) -> ConvolutiveSiameseModel:
-
+) -> nn.Module:
     device = torch.device("cuda")
-
-    model = ConvolutiveSiameseModel(
-        vocab_size=vocab_size,
-        embedding_dim=embedding_dim,
-        hidden_dim=hidden_dim,
-    ).to(device)
+    model.to(device)
 
     criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     best_val_loss = float("inf")
     epochs_no_improve = 0
-    best_model_path = os.path.join(model_save_path, "convolutive_siamese_best.pth")
+    best_model_path = os.path.join(model_save_path, "_best.pth")
 
     for epoch in range(epochs):
         model.train()
@@ -85,9 +83,57 @@ def train_model(
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
             "val_loss": avg_val_loss
-        }, os.path.join(model_save_path, f"convolutive_siamese_ckpt_epoch{epoch + 1}.pth"))
+        }, os.path.join(model_save_path, f"_ckpt_epoch{epoch + 1}.pth"))
 
-    torch.save(model.state_dict(), os.path.join(model_save_path, "convolutive_siamese_final.pth"))
+    torch.save(model.state_dict(), os.path.join(model_save_path, "_final.pth"))
     model.load_state_dict(torch.load(best_model_path))
     model.eval()
     return model
+
+def evaluate_model(model, test_loader, device) -> None:
+    model.eval()
+    y_true = []
+    y_pred = []
+    probs_all = []
+
+    with torch.no_grad():
+        for x1, x2, y in test_loader:
+            x1, x2, y = x1.to(device), x2.to(device), y.to(device)
+            logits = model(x1, x2)
+            probs = torch.sigmoid(logits)
+            preds = (probs > 0.5).long()
+
+            y_true.extend(y.cpu().numpy())
+            y_pred.extend(preds.cpu().numpy())
+            probs_all.extend(probs.cpu().numpy())
+
+    # Metrics
+    acc = sum([yt == yp for yt, yp in zip(y_true, y_pred)]) / len(y_true)
+    f1 = f1_score(y_true, y_pred)
+    roc_auc = roc_auc_score(y_true, probs_all)
+
+    print(f"Test Accuracy : {acc:.4f}")
+    print(f"Test F1 Score : {f1:.4f}")
+    print(f"Test ROC AUC  : {roc_auc:.4f}\n")
+
+    # ROC curve
+    fpr, tpr, _ = roc_curve(y_true, probs_all)
+    plt.figure(figsize=(6, 5))
+    plt.plot(fpr, tpr, label=f'ROC AUC = {roc_auc:.2f}')
+    plt.plot([0, 1], [0, 1], '--', color='gray')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+    # Confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    disp.plot(cmap='Blues')
+    plt.title("Confusion Matrix")
+    plt.grid(False)
+    plt.tight_layout()
+    plt.show()
