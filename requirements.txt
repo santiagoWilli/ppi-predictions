@@ -5,13 +5,19 @@ pyarrow==20.0.0
 matplotlib==3.10.3
 scikit-learn==1.5.0
 
-# Azure
-azure-ai-ml==1.27.1
-azure-identity==1.23.0
-msrest==0.7.1
-mltable==1.6.1
+torch==2.7.0
+torchvision==0.22.0
+torchaudio==2.7.0
+
+tqdm==4.67.1
 
 # Jupyter
 jupyterlab==4.4.2
 ipykernel==6.29.5
 ipywidgets==8.1.7
+
+# Azure
+azure-ai-ml==1.27.1
+azure-identity==1.23.0
+msrest==0.7.1
+mltable==1.6.1
